@@ -49,8 +49,6 @@ def getCodeDetail(code, today_all):
     condition = today_all['code'] == code
     today_code = today_all[condition]
     x_today = [0, 0, 0, 0, 0]
-    # print(today_code)
-    # exit()
     try:
         x_today_ma5 = (today_code['trade'].values[0] + df['close'].iloc[:4].sum()) / 5 - df.iloc[0]['ma5']
         x_today_v_ma5 = (today_code['volume'].values[0]/100 + df['volume'].iloc[:4].sum()) / 5 - df.iloc[0]['v_ma5']
