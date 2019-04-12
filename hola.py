@@ -8,16 +8,14 @@ pd.set_option('display.width', 1000)
 def stockFilter(codesList, today_all):
     filterCodesList = []
     print("需遍历%d只股票" % len(codesList))
-    black_stock = ['300684']
     offset = 1
     for i in codesList:
         try:
             currentStock = ts.get_hist_data(i)
             todayStock = today_all[today_all['code'] == i]
             if currentStock.iloc[0]['ma10'] > currentStock.iloc[1]['ma10'] and currentStock.iloc[0]['ma20'] > currentStock.iloc[1]['ma20'] \
-                    and float(todayStock['amount']) > 1000000000 and currentStock.shape[0] > 400 and float(todayStock['trade']) != 0.0\
-                    and currentStock.iloc[0]['ma5'] > currentStock.iloc[1]['ma5'] and i not in black_stock\
-                    and -9.9 < float(todayStock['changepercent']) < 9.9:
+                    and float(todayStock['amount']) > 500000000 and currentStock.shape[0] > 400 and float(todayStock['trade']) != 0.0\
+                    and currentStock.iloc[0]['ma5'] > currentStock.iloc[1]['ma5'] and 0 < float(todayStock['changepercent']) < 9.9:
                 filterCodesList.append(i)
                 print("遍历第%d只，filterCodesList 中添加%s" % (offset, i))
         except:

@@ -7,6 +7,7 @@ from sklearn.ensemble import RandomForestClassifier
 
 from twilio.rest import Client
 import datetime
+import time
 import sys
 sys.path.extend(['/Users/kingerious/git/stockPredictor'])
 import hola
@@ -52,7 +53,7 @@ def classification_model(model, data, predictors, outcome, code):
 
 
 def getTarget(filterCodesList, today_all):
-    max_score, sumScore, sumCount = 0, 0, 0
+    max_score, sumScore, sumCount, max_code = 0, 0, 0, ''
     high_rate_list = []
     for code in filterCodesList:
         x_today, df = hola.getCodeDetail(code, today_all)
@@ -149,11 +150,15 @@ def getTarget(filterCodesList, today_all):
     if high_rate_list:
         high_rate_list = sorted(high_rate_list, key=lambda x:x[1])
         high_rate_list = [i[0] for i in high_rate_list]
-
     print(high_rate_list)
-
     print("finished, max_score = %.3f, code: %s, aveScore = %.3f" % (max_score, max_code, sumScore/sumCount))
+    try:
+        sendMessage(high_rate_list)
+    except:
+        pass
+    return high_rate_list[len(high_rate_list)//2]
 
+def sendMessage(high_rate_list):
     # 下面认证信息的值在你的 twilio 账户里可以找到
     account_sid = "ACd1516a7bc5a58c888c064154bff19389"
     auth_token = "0af7b188b6900fdd848c52e6b58d8c9d"
@@ -163,36 +168,40 @@ def getTarget(filterCodesList, today_all):
     noticePhone = ["+8618582557010"]
     for phone in noticePhone:
         message = client.messages.create(to=phone,  # 区号+你的手机号码
-                                     from_="+12015145420",  # 你的 twilio 电话号码
-                                     body=content)
+                                         from_="+12015145420",  # 你的 twilio 电话号码
+                                         body=content)
         print(message.sid)
-    return high_rate_list[len(high_rate_list)//2]
 
-def main():
+def getFilterStock():
     print(datetime.datetime.today())
     sh, sh_real_time = ts.get_hist_data('sh'), ts.get_index()
-    if sh_real_time.iloc[0]['change'] < -0.8 or sh_real_time.iloc[0]['close'] < sh.iloc[4]['close']:
+    if sh_real_time.iloc[0]['change'] < -0.8 or (
+            sh_real_time.iloc[0]['close'] < sh.iloc[4]['close'] and sh_real_time.iloc[0]['change'] < 0.8):
         print("大盘不好，不操作")
         sys.exit()
+    while 1:
+        try:
+            df = ts.get_today_all()
+            today_all = df[~df.name.str.contains('ST')]
+            break
+        except:
+            print("正在重试.")
+    filterCodesList = hola.getFilterCodesList(today_all)
+    return filterCodesList
 
-    try:
-        df = ts.get_today_all()
-        today_all = df[~df.name.str.contains('ST')]
-    except:
-        print("Got stock info failed. Try again later please.")
-        sys.exit()
-
-    filterCodesList = hola.getFilterCodesListNew(today_all)
-    # filterCodesList = ['000001', '000002', '000063', '000333', '000338', '000503', '000717', '000735', '000807',
-    #                    '000858', '000932', '000981', '000990', '002024', '002027', '002110', '002118', '002146',
-    #                    '002157', '002177', '002191', '002405', '002415', '002440', '002456', '002460', '002565',
-    #                    '002597', '002639', '002648', '002797', '300033', '300059', '300107', '300267', '300498',
-    #                    '300527', '600018', '600028', '600030', '600031', '600036', '600048', '600072', '600104',
-    #                    '600109', '600155', '600196', '600309', '600332', '600340', '600352', '600422', '600426',
-    #                    '600446', '600516', '600518', '600519', '600572', '600585', '600596', '600648', '600690',
-    #                    '600801', '600837', '600887', '601166', '601186', '601211', '601318', '601390', '601398',
-    #                    '601555', '601668', '601688', '601766', '601881', '601989', '603000', '603128', '603993']
-    print(getTarget(filterCodesList, today_all))
+def main():
+    filterCodesList = getFilterStock()
+    # filterCodesList = ['603888', '603128', '603117', '601800', '601700', '601668', '601099', '601009', '600975', '600868', '600848', '600804', '600795', '600737', '600705', '600643', '600459', '600446', '600406', '600369', '600292', '600218', '600192', '600166', '600158', '600131', '600061', '300435', '300333', '300297', '300113', '300091', '002733', '002673', '002639', '002596', '002477', '002451', '002396', '002385', '002366', '002299', '002235', '002130', '002047', '002002', '001696', '000990', '000957', '000930', '000875', '000760', '000735', '000625', '000571', '000563', '000425', '000338']
+    while datetime.datetime.now().hour != 14 or datetime.datetime.now().minute != 30:
+       time.sleep(30)
+    while 1:
+        try:
+            df = ts.get_today_all()
+            today_all = df[~df.name.str.contains('ST')]
+            break
+        except:
+            print("正在重试.")
+    return getTarget(filterCodesList, today_all)
 
 
 if __name__ == '__main__':
