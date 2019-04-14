@@ -28,6 +28,10 @@ print("交易时间：%s" % datetime.datetime.today())
 user.auto_ipo()
 user.buy(code, price*1.005, amount)
 print("委托买入：%s，委托价：%f，委托数量：%d" % (code, price*1.005, amount))
+try:
+    predictor.sendMessage("买入" + code + "成功，" + "一共" + str(amount) + "股")
+except:
+    pass
 time.sleep(68400)
 # time.sleep(30)
 while 1:
@@ -38,10 +42,18 @@ while 1:
                 datetime.datetime.now().hour == 11 and datetime.datetime.now().minute >= 28):
             user.sell(code, code_info.iloc[0]['price'] * 0.995, amount)
             print("委托卖出：%s，委托价：%f，委托数量：%d" % (code, price * 0.995, amount))
+            try:
+                predictor.sendMessage("卖出" + code + "成功，" + "一共" + str(amount) + "股")
+            except:
+                pass
             break
     except:
         print("正在重试……")
         time.sleep(5)
         continue
     time.sleep(120)
+try:
+    predictor.sendMessage('今天操作成功')
+except:
+    pass
 sys.exit()

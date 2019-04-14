@@ -65,7 +65,7 @@ def getTarget(filterCodesList, today_all):
 
         y = y.apply(lambda x:1 if x > 2 else 0)
         # print(x[:50])
-        # print(len(x))pip
+        # print(len(x))
         i = 0
         ma5_change = []
         v_ma5_change = []
@@ -153,17 +153,17 @@ def getTarget(filterCodesList, today_all):
     print(high_rate_list)
     print("finished, max_score = %.3f, code: %s, aveScore = %.3f" % (max_score, max_code, sumScore/sumCount))
     try:
-        sendMessage(high_rate_list)
+        sendMessage(','.join(high_rate_list))
     except:
         pass
     return high_rate_list[len(high_rate_list)//2]
 
-def sendMessage(high_rate_list):
+def sendMessage(messages):
     # 下面认证信息的值在你的 twilio 账户里可以找到
     account_sid = "ACd1516a7bc5a58c888c064154bff19389"
     auth_token = "0af7b188b6900fdd848c52e6b58d8c9d"
     client = Client(account_sid, auth_token)
-    content = ','.join(high_rate_list)
+    content = messages
     # noticePhone = ["+8618582557010", "+8618081723936"]
     noticePhone = ["+8618582557010"]
     for phone in noticePhone:
@@ -177,7 +177,7 @@ def getFilterStock():
     sh, sh_real_time = ts.get_hist_data('sh'), ts.get_index()
     if sh_real_time.iloc[0]['change'] < -0.8 or (
             sh_real_time.iloc[0]['close'] < sh.iloc[4]['close'] and sh_real_time.iloc[0]['change'] < 0.8):
-        print("大盘不好，不操作")
+        sendMessage("大盘不好，不操作")
         sys.exit()
     while 1:
         try:
@@ -186,6 +186,7 @@ def getFilterStock():
             break
         except:
             print("正在重试.")
+            time.sleep(5)
     filterCodesList = hola.getFilterCodesList(today_all)
     return filterCodesList
 
@@ -201,6 +202,7 @@ def main():
             break
         except:
             print("正在重试.")
+            time.sleep(5)
     return getTarget(filterCodesList, today_all)
 
 
