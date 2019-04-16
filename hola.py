@@ -14,8 +14,9 @@ def stockFilter(codesList, today_all):
             currentStock = ts.get_hist_data(i)
             todayStock = today_all[today_all['code'] == i]
             if currentStock.iloc[0]['ma10'] > currentStock.iloc[1]['ma10'] and currentStock.iloc[0]['ma20'] > currentStock.iloc[1]['ma20'] \
-                    and float(todayStock['amount']) > 500000000 and currentStock.shape[0] > 400 and float(todayStock['trade']) != 0.0\
-                    and currentStock.iloc[0]['ma5'] > currentStock.iloc[1]['ma5'] and 0 < float(todayStock['changepercent']) < 9.9:
+                    and float(todayStock['amount']) > 300000000 and currentStock.shape[0] > 400 and float(todayStock['trade']) != 0.0\
+                    and currentStock.iloc[0]['ma5'] > currentStock.iloc[1]['ma5'] and 0 < float(todayStock['high'])/(
+                    float(todayStock['trade'])*100/(100+float(todayStock['changepercent'])))-1 < 0.099:
                 filterCodesList.append(i)
                 print("遍历第%d只，filterCodesList 中添加%s" % (offset, i))
         except:

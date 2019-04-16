@@ -5,16 +5,26 @@ import time
 import sys
 import tushare as ts
 
+try:
+    predictor.sendMessage("新的交易开始啦:" + str(datetime.datetime.now()))
+except:
+    pass
 code = predictor.main()
-# code = '600218'
+#code = '600875'
+#amount = 600
 print("-----马上开始交易_%s -----" % code)
 user = easytrader.use('ths')
-user.connect(r'D:\Program Files\ths\xiadan.exe')
+while 1:
+    try:
+        user.connect(r'D:\Program Files\ths\xiadan.exe')
+        break
+    except:
+        pass
 balance = user.balance
 
-print(balance['可用金额'])
+print(balance['总资产'])
 print("waiting at:%s" % datetime.datetime.today())
-while datetime.datetime.now().hour != 14 or datetime.datetime.now().minute != 57:
+while datetime.datetime.now().hour != 14 or datetime.datetime.now().minute != 56:
     time.sleep(30)
 while 1:
     try:
@@ -32,14 +42,18 @@ try:
     predictor.sendMessage("买入" + code + "成功，" + "一共" + str(amount) + "股")
 except:
     pass
-time.sleep(68400)
+time.sleep(69600)
 # time.sleep(30)
+print("-----开始尝试卖出_%s-----" % code)
+timer = 0
 while 1:
     try:
         code_info = ts.get_today_ticks(code)
-        if (float(code_info.iloc[0]['pchange']) - float(code_info.iloc[100]['pchange']) > 2 and float(
-                code_info.iloc[0]['pchange']) < 9.9) or (
-                datetime.datetime.now().hour == 11 and datetime.datetime.now().minute >= 28):
+        for i in range(100, 150):
+            if float(code_info.iloc[0]['pchange']) - float(code_info.iloc[i]['pchange']) > 3:
+                timer += 1
+                break
+        if timer == 2 or (datetime.datetime.now().hour == 11 and datetime.datetime.now().minute >= 26):
             user.sell(code, code_info.iloc[0]['price'] * 0.995, amount)
             print("委托卖出：%s，委托价：%f，委托数量：%d" % (code, price * 0.995, amount))
             try:
